@@ -1,0 +1,7 @@
+.Rhistory
+*.Rproj*
+.DS_Store
+.drake/
+*.html
+*.Rout
+*.rds
