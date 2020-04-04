@@ -5,9 +5,11 @@ A project to visualize ski tours from [Snezak webpage](https://www.snezak.si/) o
 ## Installation 
 
 Install packages from `packages.R` file.  
-Run `make.R`.
+
 
 ## Usage
+Run `r_make()` in console.  
+
 It's planned that the dashboard will be hosted on [shinnyapps.io](https://www.shinyapps.io/). Link to follow. 
 
 ## Contributing
