@@ -25,7 +25,6 @@ get_rates <- function(html_node) {
 }
 
 extract_ski_tour <- function(ski_tour_section) {
-  browser()
   # date & link ----
   link <- get_attr_of_nodes(ski_tour_section, nodes = "a", attr = "href")
   date <- get_attr_of_nodes(ski_tour_section, nodes = "time", attr = "datetime")
@@ -51,7 +50,9 @@ extract_ski_tour <- function(ski_tour_section) {
 }
 
 extract_all_ski_tours <- function(ski_tour_section) {
-  ski_tour_section %>% 
+  snezak_html <- get_snezak_html()
+
+  snezak_html %>%
     map(extract_ski_tour) %>%
     bind_rows() %>%
     # TODO should be done inside extract_ski_tour
