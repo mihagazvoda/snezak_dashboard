@@ -1,3 +1,11 @@
+is_path_allowed <- function() {
+  paths_allowed(
+    paths = c("/razmere/"),
+    domain = "https://www.snezak.si/",
+    bot = "*"
+  )
+}
+
 get_snezak_html <- function() {
   read_html("https://www.snezak.si/razmere/?date=season&startDate=&endDate=&conditionsMin=1&conditionsMax=5&safetyMin=1&safetyMax=5") %>%
     html_nodes(".post-list section")
@@ -50,6 +58,10 @@ extract_ski_tour <- function(ski_tour_section) {
 }
 
 extract_all_ski_tours <- function(ski_tour_section) {
+  if(!is_path_allowed()) {
+    stop("This url is not allowed to be scraped.")
+  }
+  
   snezak_html <- get_snezak_html()
 
   snezak_html %>%
