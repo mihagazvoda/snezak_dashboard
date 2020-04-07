@@ -4,4 +4,3 @@ source("R/peaks_functions.R")
 source("R/plan.R")
 
 drake_config(plan)
-
