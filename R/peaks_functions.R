@@ -1,12 +1,11 @@
 get_peaks <- function(path_peaks) {
-  if (file.exists(path_peaks)) {
+  osm_points <- if (file.exists(path_peaks)) {
     readr::read_rds(path_peaks)
   } else {
-    {
-      get_osm_points() %>% save_rds(path_peaks)
-    } %>%
-      get_peaks_from_osm_points()
+    get_osm_points() %>% save_rds(path_peaks)
   }
+  
+  get_peaks_from_osm_points(osm_points)
 }
 
 get_osm_points <- function() {
@@ -17,7 +16,7 @@ get_osm_points <- function() {
     mutate(
       lon = st_coordinates(geometry)[, 1],
       lat = st_coordinates(geometry)[, 2]
-    ) 
+    )
   # %>% tibble()
 }
 
