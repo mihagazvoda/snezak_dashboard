@@ -17,13 +17,10 @@ get_attr_of_nodes <- function(html_file, nodes, attr) {
     html_attr(attr)
 }
 
-get_text_from_nodes <- function(html_file, nodes, trim = FALSE) {
+get_text_from_nodes <- function(html_file, nodes) {
   html_file %>%
     html_nodes(nodes) %>%
-    html_text() %>%
-    {
-      if (trim) str_replace_all(., "[\n\t]", "") else .
-    }
+    html_text()
 }
 
 get_rates <- function(html_node) {
@@ -41,8 +38,8 @@ extract_ski_tour <- function(ski_tour_section) {
   ski_tour_main <- html_nodes(ski_tour_section, css = ".main")
 
   title <- get_text_from_nodes(ski_tour_main, nodes = "h2")
-  author <- get_text_from_nodes(ski_tour_main, nodes = "div.author", trim = TRUE)
-  route <- get_text_from_nodes(ski_tour_main, nodes = "div.route", trim = TRUE)
+  author <- get_text_from_nodes(ski_tour_main, nodes = "div.author")
+  route <- get_text_from_nodes(ski_tour_main, nodes = "div.route")
 
   # rate ----
   ski_tour_rate <- html_nodes(ski_tour_section, css = ".rates div.rate")
@@ -68,5 +65,6 @@ extract_all_ski_tours <- function(ski_tour_section) {
     map(extract_ski_tour) %>%
     bind_rows() %>%
     # TODO should be done inside extract_ski_tour
-    separate(route, c("mountains", "peak", "route"), sep = "\\|", remove = TRUE)
+    separate(route, c("mountains", "peak", "route"), sep = "\\|", remove = TRUE) %>% 
+    mutate_if(is.character, trimws) 
 }
