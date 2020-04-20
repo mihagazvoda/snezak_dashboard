@@ -32,7 +32,8 @@ get_rates <- function(html_node) {
 extract_ski_tour <- function(ski_tour_section) {
   # date & link ----
   link <- get_attr_of_nodes(ski_tour_section, nodes = "a", attr = "href")
-  date <- get_attr_of_nodes(ski_tour_section, nodes = "time", attr = "datetime")
+  date <- get_attr_of_nodes(ski_tour_section, nodes = "time", attr = "datetime") %>% 
+    as.Date()
 
   # main ----
   ski_tour_main <- html_nodes(ski_tour_section, css = ".main")
