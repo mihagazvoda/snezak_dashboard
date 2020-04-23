@@ -1,3 +1,4 @@
+# TODO remove rds file
 get_peaks <- function(path_peaks) {
   osm_points <- if (file.exists(path_peaks)) {
     readr::read_rds(path_peaks)
