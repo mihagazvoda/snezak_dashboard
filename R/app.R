@@ -6,7 +6,16 @@ ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("map", width = "100%", height = "100%"),
   absolutePanel(
-    top = 10, 
+    bottom = 10,
+    left = 10,
+    radioButtons(
+    "rating_type",
+    label = "Rating type: ",
+    choices = c("Ski conditions" = "ski_condition",
+                "Safety" = "safety")
+  )),
+  absolutePanel(
+    bottom = 10,
     right = 10,
     dateRangeInput(
       "date_range",
@@ -23,11 +32,10 @@ server <- function(input, output, session) {
   # Reactive expression for the data subsetted to what the user selected
   filter_df <- reactive({
     df %>%
-      filter(!is.na(lat) 
-             & between(date, input$date_range[1], input$date_range[2])) %>%
-      group_by(peak) %>%
-      # TODO has to be summarise
-      mutate(
+      filter(!is.na(lat)
+      & between(date, input$date_range[1], input$date_range[2])) %>%
+      group_by(peak, lat, lon) %>%
+      summarise(
         n = n(),
         avg_condition_rating = mean(ski_condition_rating),
         avg_safety_rating = mean(safety_rating)
@@ -41,8 +49,8 @@ server <- function(input, output, session) {
     leaflet(filter(df, !is.na(lat))) %>%
       addTiles() %>% # Add default OpenStreetMap map tiles
       # addMarkers(lng = lon, lat = lat, popup = mountain)
-      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) 
-      # addProviderTiles(providers$CartoDB.Positron)
+      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat))
+    # addProviderTiles(providers$CartoDB.Positron)
     # leaflet(quakes) %>%
     #   addTiles() %>%
     #   fitBounds(~ min(long), ~ min(lat), ~ max(long), ~ max(lat))
@@ -60,17 +68,18 @@ server <- function(input, output, session) {
         lat = ~lat,
         radius = ~ sqrt(n) * 2,
         stroke = FALSE,
-        fillOpacity = 0.7,
+        fillOpacity = 0.75,
         popup = ~ paste(
           "Count", as.character(n), "<br>",
           "Conditions:", avg_condition_rating, "<br>",
           "Safety:", avg_safety_rating
-        ),
-        label = ~ paste(
-          "Count", as.character(n), "<br>",
-          "Conditions:", avg_condition_rating, "<br>",
-          "Safety:", avg_safety_rating
         )
+        # ,
+        # label = ~ paste(
+        #   "Count", as.character(n), "<br>",
+        #   "Conditions:", avg_condition_rating, "<br>",
+        #   "Safety:", avg_safety_rating
+        # )
       )
   })
 }
