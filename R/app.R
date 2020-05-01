@@ -15,6 +15,10 @@ peak_url <- function(peak) {
   )
 }
 
+specify_decimal <- function(x, k) {
+  format(round(x, k), nsmall=k)
+} 
+
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("map", width = "100%", height = "100%"),
@@ -25,8 +29,8 @@ ui <- bootstrapPage(
       "rating_type",
       label = "Rating type: ",
       choices = c(
-        "Ski conditions" = "ski_condition",
-        "Safety" = "safety"
+        "Ski conditions" = "avg_ski_condition_rating",
+        "Safety" = "avg_safety_rating"
       )
     )
   ),
@@ -53,7 +57,7 @@ server <- function(input, output, session) {
       group_by(peak, lat, lon) %>%
       summarise(
         n = n(),
-        avg_condition_rating = mean(ski_condition_rating),
+        avg_ski_condition_rating = mean(ski_condition_rating),
         avg_safety_rating = mean(safety_rating)
       )
   })
@@ -85,17 +89,22 @@ server <- function(input, output, session) {
         radius = ~ sqrt(n) * 5,
         color = "black",
         weight = 1,
-        fillOpacity = 0.95,
-        fillColor = ~ pal(avg_safety_rating),
+        fillOpacity = 0.9,
+        fillColor = ~ pal(avg_ski_condition_rating), # TODO fix and create bins instead
         label = ~peak,
         popup = ~ paste(
           "<a href=", peak_url(peak), ">", peak, "</a>", "<br>",
           # "Tours:", as.character(n), "<br>",
-          "Conditions:", sprintf(avg_condition_rating, fmt = "%#.1f"), "<br>",
-          "Safety:", sprintf(avg_safety_rating, fmt = "%#.1f")
+          "Conditions:", specify_decimal(avg_ski_condition_rating, 1), "<br>",
+          "Safety:", specify_decimal(avg_safety_rating, 1)
         )
       ) %>%
-      addLegend(pal = pal, values = c(1, 5), position = "bottomleft", bins = 4, title = "Average <br> rating")
+      addLegend(
+        pal = pal, 
+        values = c(1, 5), 
+        position = "bottomleft", 
+        bins = 4, 
+        title = "Rating")
   })
 }
 
