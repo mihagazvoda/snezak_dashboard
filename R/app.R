@@ -5,8 +5,15 @@ library(RColorBrewer)
 
 pal <- colorNumeric(
   palette = "RdBu",
-  domain = c(1,5)
+  domain = c(1, 5)
+)
+
+peak_url <- function(peak) {
+  paste0(
+    "https://www.snezak.si/search.html?key=",
+    stringr::str_replace_all(peak, pattern = " ", replacement = "+")
   )
+}
 
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
@@ -15,11 +22,14 @@ ui <- bootstrapPage(
     top = 10,
     left = 10,
     radioButtons(
-    "rating_type",
-    label = "Rating type: ",
-    choices = c("Ski conditions" = "ski_condition",
-                "Safety" = "safety")
-  )),
+      "rating_type",
+      label = "Rating type: ",
+      choices = c(
+        "Ski conditions" = "ski_condition",
+        "Safety" = "safety"
+      )
+    )
+  ),
   absolutePanel(
     top = 10,
     right = 10,
@@ -52,10 +62,11 @@ server <- function(input, output, session) {
     # Use leaflet() here, and only include aspects of the map that
     # won't need to change dynamically (at least, not unless the
     # entire map is being torn down and recreated).
-    leaflet(filter(df, !is.na(lat)), 
-            options = leafletOptions(zoomControl = FALSE)) %>%
-      addTiles() %>% 
-      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) %>% 
+    leaflet(filter(df, !is.na(lat)),
+      options = leafletOptions(zoomControl = FALSE)
+    ) %>%
+      addTiles() %>%
+      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) %>%
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this)
     }")
@@ -75,20 +86,15 @@ server <- function(input, output, session) {
         color = "black",
         weight = 1,
         fillOpacity = 0.95,
-        fillColor = ~pal(avg_condition_rating),
-        popup = ~paste(
-          "Count", as.character(n), "<br>",
-          "Conditions:", avg_condition_rating, "<br>",
-          "Safety:", avg_safety_rating
-        ),
-        label = ~peak
-        # ,
-        # label = ~ paste(
-        #   "Count", as.character(n), "<br>",
-        #   "Conditions:", avg_condition_rating, "<br>",
-        #   "Safety:", avg_safety_rating
-        # )
-      ) %>% 
+        fillColor = ~ pal(avg_safety_rating),
+        label = ~peak,
+        popup = ~ paste(
+          "<a href=", peak_url(peak), ">", peak, "</a>", "<br>",
+          # "Tours:", as.character(n), "<br>",
+          "Conditions:", sprintf(avg_condition_rating, fmt = "%#.1f"), "<br>",
+          "Safety:", sprintf(avg_safety_rating, fmt = "%#.1f")
+        )
+      ) %>%
       addLegend(pal = pal, values = c(1, 5), position = "bottomleft", bins = 4, title = "Average <br> rating")
   })
 }
