@@ -4,7 +4,7 @@ library(dplyr)
 library(RColorBrewer)
 
 pal <- colorNumeric(
-  palette = "Blues",
+  palette = "RdBu",
   domain = c(1,5)
   )
 
@@ -72,9 +72,9 @@ server <- function(input, output, session) {
         lng = ~lon,
         lat = ~lat,
         radius = ~ sqrt(n) * 5,
-        color = pal(5),
+        color = "black",
         weight = 1,
-        fillOpacity = 0.75,
+        fillOpacity = 0.95,
         fillColor = ~pal(avg_condition_rating),
         popup = ~paste(
           "Count", as.character(n), "<br>",
@@ -88,7 +88,8 @@ server <- function(input, output, session) {
         #   "Conditions:", avg_condition_rating, "<br>",
         #   "Safety:", avg_safety_rating
         # )
-      )
+      ) %>% 
+      addLegend(pal = pal, values = c(1, 5), position = "bottomleft", bins = 4, title = "Average <br> rating")
   })
 }
 
