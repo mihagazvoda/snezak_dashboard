@@ -1,12 +1,18 @@
 library(shiny)
 library(leaflet)
 library(dplyr)
+library(RColorBrewer)
+
+pal <- colorNumeric(
+  palette = "Blues",
+  domain = c(1,5)
+  )
 
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
   leafletOutput("map", width = "100%", height = "100%"),
   absolutePanel(
-    bottom = 10,
+    top = 10,
     left = 10,
     radioButtons(
     "rating_type",
@@ -15,7 +21,7 @@ ui <- bootstrapPage(
                 "Safety" = "safety")
   )),
   absolutePanel(
-    bottom = 10,
+    top = 10,
     right = 10,
     dateRangeInput(
       "date_range",
@@ -46,14 +52,13 @@ server <- function(input, output, session) {
     # Use leaflet() here, and only include aspects of the map that
     # won't need to change dynamically (at least, not unless the
     # entire map is being torn down and recreated).
-    leaflet(filter(df, !is.na(lat))) %>%
-      addTiles() %>% # Add default OpenStreetMap map tiles
-      # addMarkers(lng = lon, lat = lat, popup = mountain)
-      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat))
-    # addProviderTiles(providers$CartoDB.Positron)
-    # leaflet(quakes) %>%
-    #   addTiles() %>%
-    #   fitBounds(~ min(long), ~ min(lat), ~ max(long), ~ max(lat))
+    leaflet(filter(df, !is.na(lat)), 
+            options = leafletOptions(zoomControl = FALSE)) %>%
+      addTiles() %>% 
+      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) %>% 
+      htmlwidgets::onRender("function(el, x) {
+        L.control.zoom({ position: 'bottomright' }).addTo(this)
+    }")
   })
 
   # Incremental changes to the map (in this case, replacing the
@@ -66,14 +71,17 @@ server <- function(input, output, session) {
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
-        radius = ~ sqrt(n) * 2,
-        stroke = FALSE,
+        radius = ~ sqrt(n) * 5,
+        color = pal(5),
+        weight = 1,
         fillOpacity = 0.75,
-        popup = ~ paste(
+        fillColor = ~pal(avg_condition_rating),
+        popup = ~paste(
           "Count", as.character(n), "<br>",
           "Conditions:", avg_condition_rating, "<br>",
           "Safety:", avg_safety_rating
-        )
+        ),
+        label = ~peak
         # ,
         # label = ~ paste(
         #   "Count", as.character(n), "<br>",
