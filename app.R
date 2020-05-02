@@ -1,23 +1,7 @@
 library(shiny)
 library(leaflet)
-library(dplyr)
 library(RColorBrewer)
-
-pal <- colorNumeric(
-  palette = "RdBu",
-  domain = c(1, 5)
-)
-
-peak_url <- function(peak) {
-  paste0(
-    "https://www.snezak.si/search.html?key=",
-    stringr::str_replace_all(peak, pattern = " ", replacement = "+")
-  )
-}
-
-specify_decimal <- function(x, k) {
-  format(round(x, k), nsmall=k)
-} 
+library(dplyr)
 
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
