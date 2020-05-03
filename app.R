@@ -1,7 +1,11 @@
-library(shiny)
-library(leaflet)
-library(RColorBrewer)
-library(dplyr)
+source("R/packages.R")
+source("R/ski_tours_functions.R")
+source("R/peaks_functions.R")
+source("R/dashboard_functions.R")
+
+ski_tours = extract_all_ski_tours()
+peaks = get_peaks("./data/peak_osm_points.rds")
+df = left_join(ski_tours, rename(peaks, peak = 'name'), by = 'peak')
 
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
@@ -34,16 +38,10 @@ ui <- bootstrapPage(
 
 server <- function(input, output, session) {
   # Reactive expression for the data subsetted to what the user selected
-  filter_df <- reactive({
-    df %>%
-      filter(!is.na(lat)
-      & between(date, input$date_range[1], input$date_range[2])) %>%
-      group_by(peak, lat, lon) %>%
-      summarise(
-        n = n(),
-        avg_ski_condition_rating = mean(ski_condition_rating),
-        avg_safety_rating = mean(safety_rating)
-      )
+  update_df <- reactive({
+    ski_tours_between_dates(df, 
+                  start_date = input$date_range[1], 
+                  stop_date = input$date_range[2])
   })
 
   output$map <- renderLeaflet({
@@ -65,15 +63,16 @@ server <- function(input, output, session) {
   # an observer. Each independent set of things that can change
   # should be managed in its own observer.
   observe({
-    leafletProxy("map", data = filter_df()) %>%
+    leafletProxy("map", data = update_df()) %>%
       clearMarkers() %>%
+      clearControls() %>% 
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
         radius = ~ sqrt(n) * 5,
-        color = "black",
+        color = "black", #~ pal(avg_ski_condition_rating),
         weight = 1,
-        fillOpacity = 0.9,
+        fillOpacity = 0.8,
         fillColor = ~ pal(avg_ski_condition_rating), # TODO fix and create bins instead
         label = ~peak,
         popup = ~ paste(
@@ -88,7 +87,8 @@ server <- function(input, output, session) {
         values = c(1, 5), 
         position = "bottomleft", 
         bins = 4, 
-        title = "Rating")
+        title = "Rating",
+        opacity = 0.75)
   })
 }
 
