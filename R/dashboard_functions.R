@@ -1,11 +1,3 @@
-deploy_app <- function(file) {
-  deployApp(
-    appFiles = file,
-    appName = "snezak",
-    forceUpdate = TRUE
-  )
-}
-
 pal <- colorNumeric(
   palette = "RdYlBu",
   domain = c(1, 5)
