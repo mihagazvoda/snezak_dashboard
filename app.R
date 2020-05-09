@@ -43,6 +43,8 @@ server <- function(input, output, session) {
                   start_date = input$date_range[1], 
                   stop_date = input$date_range[2])
   })
+  
+  
 
   output$map <- renderLeaflet({
     # Use leaflet() here, and only include aspects of the map that
@@ -63,17 +65,20 @@ server <- function(input, output, session) {
   # an observer. Each independent set of things that can change
   # should be managed in its own observer.
   observe({
-    leafletProxy("map", data = update_df()) %>%
+    data <- update_df() %>% 
+      add_palette_column(input$rating_type)
+    
+    leafletProxy("map", data = data) %>%
       clearMarkers() %>%
       clearControls() %>% 
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
         radius = ~ sqrt(n) * 5,
-        color = "black", #~ pal(avg_ski_condition_rating),
+        color = "black", 
         weight = 1,
         fillOpacity = 0.8,
-        fillColor = ~ pal(avg_ski_condition_rating), # TODO fix and create bins instead
+        fillColor = ~pal(palette_column), # TODO fix and create bins instead
         label = ~peak,
         popup = ~ paste(
           "<a href=", peak_url(peak), ">", peak, "</a>", "<br>",

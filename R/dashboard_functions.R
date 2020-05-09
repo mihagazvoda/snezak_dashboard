@@ -3,6 +3,11 @@ pal <- colorNumeric(
   domain = c(1, 5)
 )
 
+add_palette_column <- function(data, palette_column) {
+  data %>% 
+    mutate(palette_column = !!sym(palette_column))
+}
+
 peak_url <- function(peak) {
   paste0(
     "https://www.snezak.si/search.html?key=",
