@@ -3,9 +3,9 @@ source("R/ski_tours_functions.R")
 source("R/peaks_functions.R")
 source("R/dashboard_functions.R")
 
-ski_tours = extract_all_ski_tours()
-peaks = get_peaks("./data/peak_osm_points.rds")
-df = left_join(ski_tours, rename(peaks, peak = 'name'), by = 'peak')
+ski_tours <- extract_all_ski_tours()
+peaks <- get_peaks("./data/peak_osm_points.rds")
+df <- left_join(ski_tours, rename(peaks, peak = "name"), by = "peak")
 
 ui <- bootstrapPage(
   tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
@@ -15,7 +15,7 @@ ui <- bootstrapPage(
     left = 10,
     radioButtons(
       "rating_type",
-      label = "Rating type: ",
+      label = "Rating type:",
       choices = c(
         "Ski conditions" = "avg_ski_condition_rating",
         "Safety" = "avg_safety_rating"
@@ -28,7 +28,7 @@ ui <- bootstrapPage(
     dateRangeInput(
       "date_range",
       label = "Date range:",
-      start = Sys.Date() - 60,
+      start = Sys.Date() - 14,
       end = Sys.Date(),
       min = min(df$date),
       max = Sys.Date()
@@ -37,14 +37,13 @@ ui <- bootstrapPage(
 )
 
 server <- function(input, output, session) {
-  # Reactive expression for the data subsetted to what the user selected
   update_df <- reactive({
-    ski_tours_between_dates(df, 
-                  start_date = input$date_range[1], 
-                  stop_date = input$date_range[2])
+    ski_tours_between_dates(df,
+      start_date = input$date_range[1],
+      stop_date = input$date_range[2]
+    )
   })
-  
-  
+
 
   output$map <- renderLeaflet({
     # Use leaflet() here, and only include aspects of the map that
@@ -65,20 +64,20 @@ server <- function(input, output, session) {
   # an observer. Each independent set of things that can change
   # should be managed in its own observer.
   observe({
-    data <- update_df() %>% 
+    data <- update_df() %>%
       add_palette_column(input$rating_type)
-    
+
     leafletProxy("map", data = data) %>%
       clearMarkers() %>%
-      clearControls() %>% 
+      clearControls() %>%
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
         radius = ~ sqrt(n) * 5,
-        color = "black", 
+        color = "black",
         weight = 1,
         fillOpacity = 0.8,
-        fillColor = ~pal(palette_column), # TODO fix and create bins instead
+        fillColor = ~ pal(palette_column), # TODO fix and create bins instead
         label = ~peak,
         popup = ~ paste(
           "<a href=", peak_url(peak), ">", peak, "</a>", "<br>",
@@ -88,12 +87,13 @@ server <- function(input, output, session) {
         )
       ) %>%
       addLegend(
-        pal = pal, 
-        values = c(1, 5), 
-        position = "bottomleft", 
-        bins = 4, 
+        pal = pal,
+        values = c(1, 5),
+        position = "bottomleft",
+        bins = 4,
         title = "Rating",
-        opacity = 0.75)
+        opacity = 0.75
+      )
   })
 }
 
