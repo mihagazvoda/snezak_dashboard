@@ -1,4 +1,4 @@
-pal <- colorNumeric(
+pal <- leaflet::colorNumeric(
   palette = "RdYlBu",
   domain = c(1, 5)
 )

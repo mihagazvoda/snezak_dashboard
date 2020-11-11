@@ -28,10 +28,10 @@ ui <- bootstrapPage(
     dateRangeInput(
       "date_range",
       label = "Date range:",
-      start = Sys.Date() - 14,
-      end = Sys.Date(),
+      start = today("CET") - years(1), # TODO change to shorter, more meaningful interval
+      end = today("CET"),
       min = min(df$date),
-      max = Sys.Date()
+      max = today("CET")
     )
   )
 )
