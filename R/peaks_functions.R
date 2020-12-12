@@ -7,20 +7,20 @@ get_peaks <- function(path_peaks) {
       max_lon = min_lon + 0.25,
       min_lat = 45.5,
       max_lat = 48
-      )
-    
-    pmap(bbox_coord, peak_osm_points) %>% 
-      bind_rows() %>% 
+    )
+
+    pmap(bbox_coord, peak_osm_points) %>%
+      bind_rows() %>%
       save_rds(path_peaks)
   }
-  
+
   get_peaks_from_osm_points(osm_points)
 }
 
 peak_osm_points <- function(min_lon, max_lon, min_lat, max_lat) {
   Sys.sleep(5)
   cat(min_lon, "\n")
-  
+
   opq(bbox = c(min_lon, min_lat, max_lon, max_lat)) %>% # lon: 11-16, lat: 45.5-48
     add_osm_feature(key = "natural", value = "peak") %>%
     osmdata_sf() %>%
@@ -28,15 +28,15 @@ peak_osm_points <- function(min_lon, max_lon, min_lat, max_lat) {
     mutate(
       lon = st_coordinates(geometry)[, 1],
       lat = st_coordinates(geometry)[, 2]
-    ) %>% 
+    ) %>%
     st_drop_geometry()
 }
 
 get_peaks_from_osm_points <- function(peak_osm_points) {
   peak_osm_points %>%
-    mutate(ele = as.integer(ele)) %>% 
+    mutate(ele = as.integer(ele)) %>%
     filter(!is.na(name) & ele > 1000) %>% # TODO ele filter doesnt work
-    separate_rows(name, sep = " / ") %>% 
+    separate_rows(name, sep = " / ") %>%
     group_by(name) %>%
     arrange(desc(ele), wikipedia, wikidata) %>%
     filter(row_number() == 1) %>%

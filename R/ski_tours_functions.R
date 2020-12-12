@@ -32,7 +32,7 @@ get_rates <- function(html_node) {
 extract_ski_tour <- function(ski_tour_section) {
   # date & link ----
   link <- get_attr_of_nodes(ski_tour_section, nodes = "a", attr = "href")
-  date <- get_attr_of_nodes(ski_tour_section, nodes = "time", attr = "datetime") %>% 
+  date <- get_attr_of_nodes(ski_tour_section, nodes = "time", attr = "datetime") %>%
     as.Date()
 
   # main ----
@@ -56,16 +56,16 @@ extract_ski_tour <- function(ski_tour_section) {
 }
 
 extract_all_ski_tours <- function(ski_tour_section) {
-  if(!is_path_allowed()) {
+  if (!is_path_allowed()) {
     stop("This url is not allowed to be scraped.")
   }
-  
+
   snezak_html <- get_snezak_html()
 
   snezak_html %>%
     map(extract_ski_tour) %>%
     bind_rows() %>%
     # TODO should be done inside extract_ski_tour
-    separate(route, c("mountains", "peak", "route"), sep = "\\|", remove = TRUE) %>% 
-    mutate_if(is.character, trimws) 
+    separate(route, c("mountains", "peak", "route"), sep = "\\|", remove = TRUE) %>%
+    mutate_if(is.character, trimws)
 }

@@ -13,6 +13,7 @@ ui <- bootstrapPage(
   absolutePanel(
     top = 10,
     left = 10,
+    HTML("<p style='font-size:10px'>by <a href='https://mihagazvoda.com/about.html'>Miha Gazvoda</a></p>"),
     radioButtons(
       "rating_type",
       label = "Rating type:",
@@ -28,11 +29,18 @@ ui <- bootstrapPage(
     dateRangeInput(
       "date_range",
       label = "Date range:",
-      start = today("CET") - years(1), # TODO change to shorter, more meaningful interval
+      start = today("CET") - days(14),
       end = today("CET"),
       min = min(df$date),
       max = today("CET")
     )
+  ),
+  absolutePanel(
+    bottom = 10,
+    left = 10,
+    # actionButton("collapse_btn", "Collapse rows"),
+    tags$h4("Tours with unknown locations"),
+    reactableOutput("table")
   )
 )
 
@@ -44,6 +52,14 @@ server <- function(input, output, session) {
     )
   })
 
+  output$table <- renderReactable({
+    create_table(update_df())
+  })
+
+  # observeEvent(input$collapse_btn, {
+  #   # Collapse all rows
+  #   updateReactable("table", expanded = FALSE)
+  # })
 
   output$map <- renderLeaflet({
     # Use leaflet() here, and only include aspects of the map that
@@ -59,12 +75,9 @@ server <- function(input, output, session) {
     }")
   })
 
-  # Incremental changes to the map (in this case, replacing the
-  # circles when a new color is chosen) should be performed in
-  # an observer. Each independent set of things that can change
-  # should be managed in its own observer.
   observe({
     data <- update_df() %>%
+      filter(!is.na(lat)) %>%
       add_palette_column(input$rating_type)
 
     leafletProxy("map", data = data) %>%
@@ -89,7 +102,7 @@ server <- function(input, output, session) {
       addLegend(
         pal = pal,
         values = c(1, 5),
-        position = "bottomleft",
+        position = "bottomright",
         bins = 4,
         title = "Rating",
         opacity = 0.75
