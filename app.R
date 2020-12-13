@@ -13,7 +13,7 @@ ui <- bootstrapPage(
   absolutePanel(
     top = 10,
     left = 10,
-    HTML("<p style='font-size:10px'>by <a href='https://mihagazvoda.com/about.html'>Miha Gazvoda</a></p>"),
+    HTML("<p style='font-size:10px'><a href='https://github.com/mihagazvoda/snezak_dashboard'>code </a>by <a href='https://mihagazvoda.com/about.html'>Miha Gazvoda</a></p>"),
     radioButtons(
       "rating_type",
       label = "Rating type:",
@@ -62,14 +62,10 @@ server <- function(input, output, session) {
   # })
 
   output$map <- renderLeaflet({
-    # Use leaflet() here, and only include aspects of the map that
-    # won't need to change dynamically (at least, not unless the
-    # entire map is being torn down and recreated).
     leaflet(filter(df, !is.na(lat)),
       options = leafletOptions(zoomControl = FALSE)
     ) %>%
       addTiles() %>%
-      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) %>%
       htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this)
     }")
@@ -83,6 +79,7 @@ server <- function(input, output, session) {
     leafletProxy("map", data = data) %>%
       clearMarkers() %>%
       clearControls() %>%
+      fitBounds(~ min(lon), ~ min(lat), ~ max(lon), ~ max(lat)) %>%
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
