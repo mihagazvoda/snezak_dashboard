@@ -86,7 +86,7 @@ server <- function(input, output, session) {
       addCircleMarkers(
         lng = ~lon,
         lat = ~lat,
-        radius = ~ sqrt(n) * 5,
+        radius = ~ sqrt(n) * 8,
         color = "black",
         weight = 1,
         fillOpacity = 0.8,
