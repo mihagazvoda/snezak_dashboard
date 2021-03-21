@@ -7,7 +7,10 @@ is_path_allowed <- function() {
 }
 
 get_snezak_html <- function() {
-  read_html(glue::glue("https://www.snezak.si/razmere/?date=custom&startDate=01.10.2019&endDate={format(today(), '%d.%m.%Y')}&conditionsMin=1&conditionsMax=5&safetyMin=1&safetyMax=5")) %>%
+  start_date <- format(today() - 90, '%d.%m.%Y')
+  end_date <- format(today(), '%d.%m.%Y')
+  
+  read_html(glue::glue("https://www.snezak.si/razmere/?date=custom&startDate={start_date}&endDate={end_date}&conditionsMin=1&conditionsMax=5&safetyMin=1&safetyMax=5")) %>%
     html_nodes(".post-list section")
 }
 
